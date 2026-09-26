@@ -328,13 +328,13 @@ for (let i = 0; i < totalParede; i++) {
   tiles.push({ el: img, x: Math.cos(ang) * raio, y: Math.sin(ang) * raio * 0.75, z: -(i / totalParede) * PROFUNDIDADE - 300 });
   mundo.appendChild(img);
 }
-// As 321 miniaturas só baixam quando o túnel começa a entrar na tela. Como ele vem logo depois do topo,
-// qualquer margem faria elas baixarem já ao abrir o site (principalmente no celular).
+// As 321 miniaturas só baixam quando o túnel já entrou um pouco na tela (15% acima da borda de baixo).
+// No PC a seção começa colada na borda de baixo ao abrir o site; sem essa folga elas baixariam de cara.
 new IntersectionObserver((entradas, obs) => {
   if (!entradas.some((e) => e.isIntersecting)) return;
   for (const tl of tiles) tl.el.src = tl.el.dataset.src;
   obs.disconnect();
-}).observe(document.getElementById('numeros'));
+}, { rootMargin: '0px 0px -15% 0px' }).observe(document.getElementById('numeros'));
 const contador = { v: 0 };
 const elContador = document.getElementById('contador');
 function desenharTunel(prog) {
