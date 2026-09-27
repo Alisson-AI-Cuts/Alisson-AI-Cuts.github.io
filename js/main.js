@@ -29,7 +29,7 @@ const TEXTOS = {
     'h.faixa': 'IA Creator · Qualquer idioma · +2.000 criativos · ', 'h.carregou': 'esta página carregou em', 'h.direitos': 'Todos os direitos reservados',
     'h.assunto': 'Contato pelo site · Alisson Martins',
     'h.corpo': 'Olá, Alisson! Vi seu site e gostaria de conversar.\n\nEmpresa:\nVaga/projeto:\n',
-    'h.embreve': 'em breve',
+    'h.embreve': 'em breve', 'h.copiar': 'Clique para copiar o e-mail', 'h.copiado': '✓ e-mail copiado',
   },
   en: {
     'cap.quem': 'Start · Hanna', 'nav.irpara': '> go to:', 'nav.dica': '↑↓ choose · Enter go · Esc close · 1–6 shortcut', 'cap.numeros': '2,000+ creatives',
@@ -51,7 +51,7 @@ const TEXTOS = {
     'h.faixa': 'AI Creator · Any language · 2,000+ creatives · ', 'h.carregou': 'this page loaded in', 'h.direitos': 'All rights reserved',
     'h.assunto': 'Contact from website · Alisson Martins',
     'h.corpo': 'Hi Alisson! I saw your website and would like to talk.\n\nCompany:\nRole/project:\n',
-    'h.embreve': 'soon',
+    'h.embreve': 'soon', 'h.copiar': 'Click to copy the email', 'h.copiado': '✓ email copied',
   },
 };
 
@@ -112,6 +112,7 @@ function montarContato() {
   if (CONFIG.email) {
     email.href = `mailto:${CONFIG.email}?subject=${encodeURIComponent(t('h.assunto'))}&body=${encodeURIComponent(t('h.corpo'))}`;
     email.textContent = CONFIG.email;
+    email.title = t('h.copiar');
     email.classList.remove('pendente');
   } else {
     email.textContent = `E-mail · ${t('h.embreve')}`;
@@ -124,6 +125,24 @@ function montarContato() {
     if (CONFIG[rede]) { a.target = '_blank'; a.rel = 'noopener'; }
   }
 }
+
+// Clique no e-mail: copia o endereço e mostra "e-mail copiado" por um instante.
+// Se o navegador não deixar copiar, o link segue normal e abre o app de e-mail.
+document.getElementById('link-email').addEventListener('click', async (e) => {
+  if (!CONFIG.email || !navigator.clipboard) return;
+  e.preventDefault();
+  const a = e.currentTarget;
+  try {
+    await navigator.clipboard.writeText(CONFIG.email);
+  } catch {
+    window.location.href = a.href;
+    return;
+  }
+  a.textContent = t('h.copiado');
+  a.classList.add('copiado');
+  clearTimeout(a._volta);
+  a._volta = setTimeout(() => { a.textContent = CONFIG.email; a.classList.remove('copiado'); }, 1800);
+});
 
 document.querySelector('.idioma').addEventListener('click', () => {
   idioma = idioma === 'pt' ? 'en' : 'pt';
