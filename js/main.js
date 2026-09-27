@@ -9,7 +9,7 @@ const CONFIG = {
 // ---------- Textos PT / EN ----------
 const TEXTOS = {
   pt: {
-    'cap.quem': 'Quem cria', 'cap.numeros': 'Volume',
+    'cap.quem': 'Início · Hanna', 'nav.irpara': '> ir para:', 'nav.dica': '↑↓ escolher · Enter ir · Esc fechar · 1–6 atalho', 'cap.numeros': '+2.000 criativos',
     'cap.trabalhos': 'Trabalhos', 'cap.produto': 'Seu produto', 'cap.servicos': 'O que eu faço', 'cap.contato': 'Contato',
     'nav.contato': 'Contato', 'hud.funcao': 'IA Creator',
     'a.cargo': 'IA Creator',
@@ -18,7 +18,7 @@ const TEXTOS = {
     'c.som': 'Ativar som', 'c.som-on': 'Som ligado',
     'd.criativos': 'criativos criados', 'd.anos': 'anos de experiência', 'd.idiomas': 'idiomas', 'd.formatos': 'formatos',
     'e.titulo': 'Trabalhos',
-    'e.lead': 'Avatares, inserts 3D e histórias feitos para ofertas reais.',
+    'e.lead': 'Avatares, inserts 3D e histórias feitos para ofertas reais.', 'e.ver': 'Ampliar vídeo',
     'e.f.todos': 'Todos', 'e.f.homens': 'Homens', 'e.f.mulheres': 'Mulheres', 'e.f.historias': 'Histórias',
     'f.titulo': 'Seu produto poderia estar aqui.',
     'f.lead': 'A velaxa é uma marca fictícia que criei do zero com IA: identidade, embalagens, linha de produtos e hero shots. Sem estúdio, sem fotógrafo, sem frete. Imagina isso com a sua embalagem.',
@@ -31,7 +31,7 @@ const TEXTOS = {
     'h.embreve': 'em breve',
   },
   en: {
-    'cap.quem': 'The creator', 'cap.numeros': 'Volume',
+    'cap.quem': 'Start · Hanna', 'nav.irpara': '> go to:', 'nav.dica': '↑↓ choose · Enter go · Esc close · 1–6 shortcut', 'cap.numeros': '2,000+ creatives',
     'cap.trabalhos': 'Work', 'cap.produto': 'Your product', 'cap.servicos': 'What I do', 'cap.contato': 'Contact',
     'nav.contato': 'Contact', 'hud.funcao': 'AI Creator',
     'a.cargo': 'AI Creator',
@@ -40,7 +40,7 @@ const TEXTOS = {
     'c.som': 'Turn sound on', 'c.som-on': 'Sound on',
     'd.criativos': 'creatives produced', 'd.anos': 'years of experience', 'd.idiomas': 'languages', 'd.formatos': 'formats',
     'e.titulo': 'Work',
-    'e.lead': 'Avatars, 3D inserts and stories made for real offers.',
+    'e.lead': 'Avatars, 3D inserts and stories made for real offers.', 'e.ver': 'Enlarge video',
     'e.f.todos': 'All', 'e.f.homens': 'Men', 'e.f.mulheres': 'Women', 'e.f.historias': 'Stories',
     'f.titulo': 'Your product could be here.',
     'f.lead': 'velaxa is a fictional brand I built from scratch with AI: identity, packaging, product line and hero shots. No studio, no photographer, no shipping. Picture this with your packaging.',
@@ -131,7 +131,7 @@ document.querySelector('.idioma').addEventListener('click', () => {
 // A página é uma sequência: sempre começa do topo, mesmo ao recarregar.
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 window.scrollTo(0, 0);
-gsap.registerPlugin(ScrollTrigger, ScrambleTextPlugin);
+gsap.registerPlugin(ScrollTrigger, ScrambleTextPlugin, Flip);
 const movimentoReduzido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 if (movimentoReduzido) document.documentElement.classList.add('movimento-reduzido');
 // Modo leve: aparelho fraco (até 4 núcleos ou até 4 GB de memória) ou quem pede menos movimento fica sem desfoques
@@ -151,13 +151,101 @@ document.querySelectorAll('[data-nav]').forEach((a) => a.addEventListener('click
   lenis.scrollTo(a.getAttribute('href'), { duration: 1.6 });
 }));
 
-// Capítulo ativo na navegação
+// ---------- Seletor "> ir para" ----------
+// Botão no topo com a seção atual; abre uma caixa de terminal com todas as partes do site.
+// Dá para digitar para filtrar, usar ↑↓ + Enter, os números 1–6 ou abrir com "/" e Ctrl+K.
+const SECOES = ['quem', 'numeros', 'trabalhos', 'produto', 'servicos', 'contato'];
+const irPara = document.querySelector('.ir-para');
+const irBotao = irPara.querySelector('.ir-para-botao');
+const irPainel = irPara.querySelector('.ir-para-painel');
+const irBusca = irPara.querySelector('input');
+const irLista = irPara.querySelector('.ir-para-lista');
+let secaoAtual = 'quem';
+let irItens = [];
+let irSel = 0;
+const semAcento = (x) => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+function desenharIrPara() {
+  const q = semAcento(irBusca.value.trim());
+  irItens = SECOES.map((id, i) => ({ id, n: i + 1, nome: t(`cap.${id}`) })).filter((x) => !q || semAcento(x.nome).includes(q));
+  irSel = Math.max(0, Math.min(irSel, irItens.length - 1));
+  irLista.innerHTML = '';
+  if (!irItens.length) {
+    const li = document.createElement('li');
+    li.className = 'vazio';
+    li.textContent = idioma === 'pt' ? 'nenhuma parte com esse nome' : 'no section with that name';
+    irLista.appendChild(li);
+  }
+  irItens.forEach((x, k) => {
+    const li = document.createElement('li');
+    li.setAttribute('role', 'option');
+    li.setAttribute('aria-selected', String(k === irSel));
+    li.innerHTML = '<span class="tecla"></span><span class="nome"></span>';
+    li.querySelector('.tecla').textContent = x.n;
+    li.querySelector('.nome').textContent = x.nome;
+    if (x.id === secaoAtual) {
+      const aqui = document.createElement('span');
+      aqui.className = 'aqui';
+      aqui.textContent = idioma === 'pt' ? 'você está aqui' : 'you are here';
+      li.appendChild(aqui);
+    }
+    li.addEventListener('pointerenter', () => { irSel = k; marcarIrPara(); });
+    li.addEventListener('click', () => irParaSecao(x.id));
+    irLista.appendChild(li);
+  });
+}
+function marcarIrPara() { [...irLista.children].forEach((li, k) => li.setAttribute('aria-selected', String(k === irSel))); }
+function abrirIrPara() {
+  irBusca.value = '';
+  irSel = Math.max(0, SECOES.indexOf(secaoAtual));
+  desenharIrPara();
+  irPainel.hidden = false;
+  irBotao.setAttribute('aria-expanded', 'true');
+  if (!movimentoReduzido) gsap.fromTo(irPainel, { opacity: 0, y: -8, clipPath: 'inset(0 0 100% 0 round 14px)' },
+    { opacity: 1, y: 0, clipPath: 'inset(0 0 0% 0 round 14px)', duration: 0.35, ease: 'power3.out' });
+  irBusca.focus();
+}
+function fecharIrPara(devolverFoco = true) {
+  if (irPainel.hidden) return;
+  irPainel.hidden = true;
+  irBotao.setAttribute('aria-expanded', 'false');
+  if (devolverFoco) irBotao.focus();
+}
+function irParaSecao(id) {
+  fecharIrPara(false);
+  const alvo = id === 'quem' ? 0 : id === 'trabalhos' ? document.querySelector('.trabalhos') : document.getElementById(id);
+  lenis.scrollTo(alvo, { offset: id === 'trabalhos' ? -100 : 0, duration: 1.4 });
+}
+irBotao.addEventListener('click', () => (irPainel.hidden ? abrirIrPara() : fecharIrPara()));
+irBusca.addEventListener('input', () => { irSel = 0; desenharIrPara(); });
+irBusca.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (irItens.length) irSel = (irSel + (e.key === 'ArrowDown' ? 1 : -1) + irItens.length) % irItens.length;
+    marcarIrPara();
+  } else if (e.key === 'Enter' && irItens[irSel]) irParaSecao(irItens[irSel].id);
+  else if (e.key === 'Escape') fecharIrPara();
+  else if (/^[1-6]$/.test(e.key) && !irBusca.value) { e.preventDefault(); irParaSecao(SECOES[+e.key - 1]); }
+});
+document.addEventListener('keydown', (e) => {
+  const digitando = /input|textarea/i.test(document.activeElement?.tagName || '');
+  if ((e.key === '/' && !digitando) || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k')) {
+    e.preventDefault();
+    irPainel.hidden ? abrirIrPara() : fecharIrPara();
+  }
+});
+document.addEventListener('pointerdown', (e) => { if (!irPara.contains(e.target)) fecharIrPara(false); });
+
+// Seção atual: o botão mostra onde a pessoa está.
+function mostrarSecaoAtual() { irBotao.querySelector('.ir-para-atual').textContent = t(`cap.${secaoAtual}`).toLowerCase().split(' · ')[0]; }
 document.querySelectorAll('main > section').forEach((sec) => {
   ScrollTrigger.create({
     trigger: sec, start: 'top 50%', end: 'bottom 50%',
     onToggle: (self) => {
       if (!self.isActive) return;
-      document.querySelectorAll('.capitulos a').forEach((a) => a.classList.toggle('ativo', a.dataset.cap === sec.id));
+      secaoAtual = sec.id;
+      mostrarSecaoAtual();
+      if (!irPainel.hidden) desenharIrPara();
     },
   });
 });
@@ -233,6 +321,8 @@ function traduzirPrompt() {
   mostrarProgresso(progresso);
   botaoSomHero.textContent = t(heroVideo.muted ? 'c.som' : 'c.som-on');
   if (typeof desenharFoto === 'function') desenharFoto(Math.max(0, pFoto));
+  if (typeof traduzirParede === 'function') traduzirParede();
+  if (typeof mostrarSecaoAtual === 'function') { mostrarSecaoAtual(); if (!irPainel.hidden) desenharIrPara(); }
 }
 botaoSomHero.addEventListener('click', () => {
   heroVideo.muted = !heroVideo.muted;
@@ -363,62 +453,156 @@ gsap.to(contador, {
 });
 gsap.from('.numeros > *', { opacity: 0, y: 30, stagger: 0.08, scrollTrigger: { trigger: '#numeros', start: 'top 60%', toggleActions: 'play none none reverse' } });
 
-// ---------- E: feed de celular ----------
-const trilho = document.querySelector('.feed-trilho');
-const secTrabalhos = document.getElementById('trabalhos');
-let itensFeed = [];
-let gatilhoFeed = null;
-let ativoFeed = -1;
+// ---------- E: parede de telas ----------
+// Os vídeos são distribuídos em colunas (cada um na sua proporção real); as colunas deslizam em velocidades
+// diferentes com a rolagem. Só tocam os que estão na tela. O filtro reorganiza a parede com o Flip.
+const parede = document.querySelector('.parede');
+const telaCheia = document.querySelector('.tela-cheia');
+const videoCheio = telaCheia.querySelector('video');
+const NOMES_TIPO = { homens: 'e.f.homens', mulheres: 'e.f.mulheres', historias: 'e.f.historias' };
+let telas = [];
+let colunas = [];
+let filtroAtual = 'todos';
 
-function montarFeed(filtro) {
-  const lista = (window.FEED || []).filter((f) => filtro === 'todos' || f.tipo === filtro);
-  trilho.innerHTML = '';
-  itensFeed = lista.map((f, i) => {
-    const d = document.createElement('div');
-    d.className = 'feed-item';
-    d.style.top = `${i * 100}%`;
-    d.innerHTML = `<img src="media/feed/${f.id}.webp" alt="" loading="lazy"><span class="tag">${f.tipo}</span>`;
-    trilho.appendChild(d);
-    return { el: d, dados: f, video: null };
+// Intercala as categorias (em vez de todos os homens juntos, depois todas as mulheres...).
+function intercalar(lista) {
+  const grupos = {};
+  lista.forEach((f) => (grupos[f.tipo] = grupos[f.tipo] || []).push(f));
+  const filas = Object.values(grupos), saida = [];
+  for (let i = 0; saida.length < lista.length; i++) filas.forEach((g) => g[i] && saida.push(g[i]));
+  return saida;
+}
+
+// O vídeo só ganha src quando chega perto da tela, e só toca enquanto está visível.
+const perto = new IntersectionObserver((entradas) => entradas.forEach((e) => {
+  const v = e.target.querySelector('video');
+  if (e.isIntersecting && !v.getAttribute('src')) v.src = v.dataset.src;
+}), { rootMargin: '300px 0px' });
+const naTela = new IntersectionObserver((entradas) => entradas.forEach((e) => {
+  if (modoLeve) return;   // aparelho fraco: só toca ao passar o mouse
+  const v = e.target.querySelector('video');
+  if (e.isIntersecting) v.play().catch(() => {}); else v.pause();
+}), { threshold: 0.35 });
+
+function rotuloTipo(tipo) {
+  if (NOMES_TIPO[tipo]) return t(NOMES_TIPO[tipo]);
+  return tipo === '3d' ? '3D' : tipo === 'inserts' ? 'Inserts' : tipo;
+}
+
+function criarTela(f) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'tela';
+  b.dataset.flipId = f.id;
+  b.style.aspectRatio = `${f.w} / ${f.h}`;
+  b.innerHTML = `<video muted loop playsinline preload="none" poster="media/feed/${f.id}.webp" data-src="media/feed/${f.id}.mp4"></video><span class="tela-tipo"></span>`;
+  const v = b.querySelector('video');
+  v.setAttribute('muted', '');
+  if (modoLeve) {
+    b.addEventListener('pointerenter', () => { if (!v.getAttribute('src')) v.src = v.dataset.src; v.play().catch(() => {}); });
+    b.addEventListener('pointerleave', () => v.pause());
+  }
+  b.addEventListener('click', () => abrirTela(f));
+  perto.observe(b);
+  naTela.observe(b);
+  return b;
+}
+
+function quantasColunas() { return window.innerWidth < 860 ? 2 : window.innerWidth < 1280 ? 3 : 4; }
+
+// Distribui as telas do filtro atual na coluna mais baixa (masonry), mantendo a ordem intercalada.
+function distribuir() {
+  const n = quantasColunas();
+  if (colunas.length !== n) {
+    parede.innerHTML = '';
+    colunas = Array.from({ length: n }, () => {
+      const c = document.createElement('div');
+      c.className = 'coluna';
+      parede.appendChild(c);
+      return c;
+    });
+  }
+  const alturas = new Array(n).fill(0);
+  telas.forEach(({ el, dados }) => {
+    const mostra = filtroAtual === 'todos' || dados.tipo === filtroAtual;
+    el.hidden = !mostra;
+    if (!mostra) return;
+    const k = alturas.indexOf(Math.min(...alturas));
+    colunas[k].appendChild(el);
+    alturas[k] += dados.h / dados.w + 0.06;
   });
-  secTrabalhos.style.height = `${Math.max(2, lista.length) * 32 + 100}vh`;
-  ativoFeed = -1;
-  if (gatilhoFeed) gatilhoFeed.kill();
-  gatilhoFeed = ScrollTrigger.create({
-    trigger: secTrabalhos, start: 'top top', end: 'bottom bottom', scrub: 0.6,
-    snap: itensFeed.length > 1 ? { snapTo: 1 / (itensFeed.length - 1), duration: 0.35, delay: 0.08, ease: 'power2.out' } : false,
-    onUpdate: (self) => {
-      const pos = self.progress * (itensFeed.length - 1);
-      gsap.set(trilho, { yPercent: -pos * 100 });
-      ativarFeed(Math.round(pos));
-    },
+}
+
+// As colunas deslizam em sentidos alternados (bem de leve) enquanto a seção passa pela tela.
+let deslize = null;
+function montarDeslize() {
+  if (deslize) deslize.kill();
+  gsap.set(colunas, { y: 0 });
+  if (movimentoReduzido) return;
+  deslize = gsap.timeline({ scrollTrigger: { trigger: parede, start: 'top bottom', end: 'bottom top', scrub: 0.6 } });
+  colunas.forEach((c, i) => deslize.fromTo(c, { y: i % 2 ? -50 : 50 }, { y: i % 2 ? 50 : -130, ease: 'none' }, 0));
+}
+
+function traduzirParede() {
+  telas.forEach(({ el, dados }) => {
+    el.querySelector('.tela-tipo').textContent = rotuloTipo(dados.tipo);
+    el.setAttribute('aria-label', `${t('e.ver')}: ${rotuloTipo(dados.tipo)}`);
   });
+}
+
+function montarParede() {
+  telas = intercalar(window.FEED || []).map((f) => ({ el: criarTela(f), dados: f }));
+  distribuir();
+  traduzirParede();
+  montarDeslize();
   ScrollTrigger.refresh();
-  ativarFeed(0);
 }
 
-function ativarFeed(i) {
-  if (i === ativoFeed || !itensFeed[i]) return;
-  ativoFeed = i;
-  itensFeed.forEach((item, k) => {
-    const perto = Math.abs(k - i) <= 1;
-    if (perto && !item.video) {
-      const v = document.createElement('video');
-      Object.assign(v, { muted: true, loop: true, playsInline: true, preload: 'metadata', src: `media/feed/${item.dados.id}.mp4` });
-      v.setAttribute('muted', '');
-      v.poster = `media/feed/${item.dados.id}.webp`;
-      item.el.querySelector('img').replaceWith(v);
-      item.video = v;
-    }
-    if (item.video) (k === i ? item.video.play().catch(() => {}) : item.video.pause());
-  });
-}
-
+// Filtro: as telas voam do lugar antigo para o novo (Flip); as que saem encolhem e somem.
+let flipAtual = null;
 document.querySelectorAll('.filtros button').forEach((b) => b.addEventListener('click', () => {
+  if (b.dataset.filtro === filtroAtual) return;
+  if (flipAtual) flipAtual.progress(1);   // clique rápido: termina a animação anterior antes de começar outra
   document.querySelectorAll('.filtros button').forEach((x) => x.classList.toggle('ativo', x === b));
-  montarFeed(b.dataset.filtro);
-  lenis.scrollTo(secTrabalhos, { duration: 0.8 });
+  const estado = Flip.getState(telas.map((x) => x.el));
+  filtroAtual = b.dataset.filtro;
+  if (deslize) deslize.kill();
+  gsap.set(colunas, { y: 0 });
+  distribuir();
+  // Com menos vídeos a parede encolhe: se a pessoa já desceu por ela, volta para o topo da parede
+  // (logo abaixo da barra do topo), sem subir até o túnel da seção anterior.
+  // O destino é um número fixo e não rola de novo se a rolagem do clique anterior ainda estiver andando
+  // (recalcular no meio do movimento fazia a página passar do ponto e mostrar o túnel).
+  const topoGrade = document.querySelector('.trabalhos').getBoundingClientRect().top;
+  if (topoGrade < 0 && !lenis.isScrolling) lenis.scrollTo(window.scrollY + topoGrade - 100, { duration: 0.7 });
+  flipAtual = Flip.from(estado, {
+    duration: movimentoReduzido ? 0 : 0.7, ease: 'power3.inOut', absolute: true, stagger: 0.015, scale: true,
+    onEnter: (els) => gsap.fromTo(els, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.5, delay: 0.25 }),
+    onLeave: (els) => gsap.to(els, { opacity: 0, scale: 0.6, duration: 0.35 }),
+    onComplete: () => { montarDeslize(); ScrollTrigger.refresh(); },
+  });
 }));
+
+// Clique: o vídeo abre grande no meio da tela, em loop.
+function abrirTela(f) {
+  videoCheio.poster = `media/feed/${f.id}.webp`;
+  videoCheio.src = `media/feed/${f.id}.mp4`;
+  telaCheia.style.setProperty('--proporcao', `${f.w} / ${f.h}`);
+  telaCheia.showModal();
+  lenis.stop();
+  videoCheio.play().catch(() => {});
+}
+telaCheia.addEventListener('close', () => { videoCheio.pause(); videoCheio.removeAttribute('src'); lenis.start(); });
+telaCheia.querySelector('.fechar').addEventListener('click', () => telaCheia.close());
+telaCheia.addEventListener('click', (e) => { if (e.target === telaCheia) telaCheia.close(); });   // clique fora do vídeo
+
+window.addEventListener('resize', () => {
+  if (!telas.length || quantasColunas() === colunas.length) return;
+  colunas = [];
+  distribuir();
+  montarDeslize();
+  ScrollTrigger.refresh();
+});
 
 // HUD de baixo só acompanha o topo; some a partir da seção D.
 ScrollTrigger.create({
@@ -483,4 +667,4 @@ window.addEventListener('load', () => {
 aplicarIdioma();
 // O feed (vídeos) só é montado quando o navegador estiver ocioso.
 requestAnimationFrame(() => requestAnimationFrame(mostrarTitulo));
-(window.requestIdleCallback || ((f) => setTimeout(f, 300)))(() => montarFeed('todos'));
+(window.requestIdleCallback || ((f) => setTimeout(f, 300)))(montarParede);
