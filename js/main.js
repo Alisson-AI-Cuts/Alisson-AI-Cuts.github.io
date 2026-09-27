@@ -1,7 +1,8 @@
 
 // ---------- Configuração (preencher antes de publicar) ----------
 const CONFIG = {
-  email: '',          // e-mail profissional novo — ainda não existe
+  whatsapp: '5551920030793',   // WhatsApp de trabalho: (51) 92003-0793
+  email: 'alisson.aicuts@gmail.com',
   linkedin: '',
   instagram: '',
 };
@@ -24,7 +25,7 @@ const TEXTOS = {
     'f.lead': 'A velaxa é uma marca fictícia que criei do zero com IA: identidade, embalagens, linha de produtos e hero shots. Sem estúdio, sem fotógrafo, sem frete. Imagina isso com a sua embalagem.',
     'g.titulo': 'O que eu faço',
     'h.titulo': 'Vamos escalar a próxima oferta?', 'h.cta': 'Entre em contato',
-    'h.nota': 'Vaga, freela ou projeto: me manda um e-mail e a gente conversa.',
+    'h.nota': 'Vaga, freela ou projeto: me chama no WhatsApp e a gente conversa.', 'h.whats': 'Olá, Alisson! Vi seu site e gostaria de conversar sobre um projeto.',
     'h.faixa': 'IA Creator · Qualquer idioma · +2.000 criativos · ', 'h.carregou': 'esta página carregou em', 'h.direitos': 'Todos os direitos reservados',
     'h.assunto': 'Contato pelo site · Alisson Martins',
     'h.corpo': 'Olá, Alisson! Vi seu site e gostaria de conversar.\n\nEmpresa:\nVaga/projeto:\n',
@@ -46,7 +47,7 @@ const TEXTOS = {
     'f.lead': 'velaxa is a fictional brand I built from scratch with AI: identity, packaging, product line and hero shots. No studio, no photographer, no shipping. Picture this with your packaging.',
     'g.titulo': 'What I do',
     'h.titulo': 'Ready to scale your next offer?', 'h.cta': 'Get in touch',
-    'h.nota': 'Job, freelance or project: send me an email and let’s talk.',
+    'h.nota': 'Job, freelance or project: message me on WhatsApp and let’s talk.', 'h.whats': 'Hi Alisson! I saw your website and would like to talk about a project.',
     'h.faixa': 'AI Creator · Any language · 2,000+ creatives · ', 'h.carregou': 'this page loaded in', 'h.direitos': 'All rights reserved',
     'h.assunto': 'Contact from website · Alisson Martins',
     'h.corpo': 'Hi Alisson! I saw your website and would like to talk.\n\nCompany:\nRole/project:\n',
@@ -103,13 +104,16 @@ function aplicarIdioma() {
 function montarContato() {
   const pedir = document.getElementById('pedir-portfolio');
   const email = document.getElementById('link-email');
+  const whats = document.getElementById('link-whatsapp');
+  // O botão principal abre o WhatsApp de trabalho já com uma mensagem pronta.
+  const urlWhats = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(t('h.whats'))}`;
+  for (const a of [pedir, whats]) { a.href = urlWhats; a.target = '_blank'; a.rel = 'noopener'; }
+  whats.textContent = 'WhatsApp';
   if (CONFIG.email) {
-    const url = `mailto:${CONFIG.email}?subject=${encodeURIComponent(t('h.assunto'))}&body=${encodeURIComponent(t('h.corpo'))}`;
-    pedir.href = url;
-    email.href = `mailto:${CONFIG.email}`;
+    email.href = `mailto:${CONFIG.email}?subject=${encodeURIComponent(t('h.assunto'))}&body=${encodeURIComponent(t('h.corpo'))}`;
     email.textContent = CONFIG.email;
+    email.classList.remove('pendente');
   } else {
-    pedir.href = '#contato';
     email.textContent = `E-mail · ${t('h.embreve')}`;
     email.classList.add('pendente');
   }
