@@ -135,7 +135,7 @@ main { position: relative; z-index: 2; }
   100% { translate: 0 0; text-shadow: none; }
 }
 .cargo { margin: 0 0 18px; font-family: var(--mono); font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; }
-.cargo::before { content: ""; display: inline-block; width: 28px; height: 1px; margin-right: 12px; vertical-align: middle; background: var(--magenta); }
+.cargo { text-shadow: -2px 0 var(--ciano), 2px 0 var(--magenta); }   /* no lugar do tracinho: o cargo com o glitch ciano/magenta */
 .lead { margin: 0 0 22px; color: var(--tinta-2); font-size: clamp(15px, 1.2vw, 18px); max-width: 44ch; }
 .dica-rolar { display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tinta-3); }
 .seta { width: 1px; height: 36px; background: linear-gradient(var(--ciano), transparent); animation: seta 1.8s ease-in-out infinite; transform-origin: top; }
@@ -280,8 +280,6 @@ main { position: relative; z-index: 2; }
   display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); align-items: center; padding: 90px var(--gutter) 60px;
 }
 .palco-pilha .cabecalho-secao { margin: 0; }
-.pilha-contagem { font-family: var(--mono); font-size: 12px; letter-spacing: .16em; color: var(--tinta-3); }
-.pilha-contagem #pilha-atual { color: var(--ciano); }
 .mesa-cartas { position: relative; height: 100%; }
 .carta {
   position: absolute; left: 50%; top: 50%; margin: 0; height: min(64vh, 580px); aspect-ratio: 4 / 5; overflow: hidden;
@@ -295,11 +293,10 @@ main { position: relative; z-index: 2; }
 /* G · Serviços */
 .servicos { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--linha); }
 .servicos li {
-  display: grid; grid-template-columns: 70px minmax(0, 1fr) minmax(0, 1.2fr); gap: 20px; align-items: baseline;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 20px; align-items: baseline;
   padding: 26px 0; border-bottom: 1px solid var(--linha); transition: background .3s, padding .3s;
 }
 .servicos li:hover { background: linear-gradient(90deg, rgba(53, 240, 255, .07), transparent); padding-left: 12px; }
-.servicos .num { font-family: var(--mono); font-size: 11px; color: var(--ciano); }
 .servicos h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(26px, 3vw, 42px); text-transform: uppercase; letter-spacing: .03em; line-height: 1; }
 .servicos p { margin: 0; color: var(--tinta-2); }
 
@@ -391,8 +388,7 @@ main { position: relative; z-index: 2; }
   .palco-pilha .lead { display: none; }
   .carta { height: 46vh; }
   .carta.larga { width: 88vw; }
-  .servicos li { grid-template-columns: 40px minmax(0, 1fr); }
-  .servicos p { grid-column: 2; }
+  .servicos li { grid-template-columns: minmax(0, 1fr); gap: 8px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

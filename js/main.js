@@ -94,8 +94,8 @@ function aplicarIdioma() {
   document.querySelectorAll('.titulo-display[data-i18n]').forEach(quebrarLetras);
   document.querySelectorAll('.idioma [data-lang]').forEach((el) => el.classList.toggle('ativo', el.dataset.lang === idioma));
   const lista = document.querySelector('.servicos');
-  lista.innerHTML = SERVICOS[idioma].map(([h, p], i) =>
-    `<li><span class="num">${String(i + 1).padStart(2, '0')}</span><h3>${h}</h3><p>${p}</p></li>`).join('');
+  lista.innerHTML = SERVICOS[idioma].map(([h, p]) =>
+    `<li><h3>${h}</h3><p>${p}</p></li>`).join('');
   lista.querySelectorAll('h3').forEach(quebrarLetras);
   montarContato();
   if (typeof traduzirPrompt === 'function') traduzirPrompt();
@@ -636,18 +636,12 @@ ScrollTrigger.create({
 
 // ---------- F · Seu produto: pilha de cartas ----------
 const cartas = gsap.utils.toArray('#produto .carta');
-const pilhaAtual = document.getElementById('pilha-atual');
-document.getElementById('pilha-total').textContent = String(cartas.length).padStart(2, '0');
 // Posição de uma carta que está "n" posições abaixo do topo da pilha.
 const naPilha = (n) => ({ xPercent: -50, yPercent: -50, y: n * 14, scale: 1 - n * 0.04, rotation: n === 0 ? 0 : (n % 2 ? 3 : -3) });
 cartas.forEach((c, i) => gsap.set(c, { ...naPilha(Math.min(i, 3)), zIndex: cartas.length - i, opacity: i > 3 ? 0 : 1 }));
 const tlPilha = gsap.timeline({
   scrollTrigger: {
     trigger: '#produto', start: 'top top', end: 'bottom bottom', scrub: 0.6,
-    onUpdate: (self) => {
-      const k = Math.min(cartas.length - 1, Math.floor(self.progress * (cartas.length - 1) + 0.5));
-      pilhaAtual.textContent = String(k + 1).padStart(2, '0');
-    },
   },
 });
 cartas.forEach((carta, i) => {
